@@ -16,6 +16,21 @@
             box-sizing: border-box;
         }
 
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            border-radius: 10px;
+            box-shadow: inset 0 0 6px rgb(100, 100, 100);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(150, 150, 150);
+            border-radius: 10px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, .3);
+        }
+
         body {
             height: 100vh;
         }
@@ -41,6 +56,31 @@
         #timer-inner {
             background: rgb(76, 139, 129);
         }
+
+        #canvas-list {
+            height: 82%;
+            background: rgb(132, 107, 107);
+        }
+
+        #canvas-list-header {
+            height: 8%;
+            border-bottom: 1px solid rgb(200, 200, 200);
+        }
+
+        #canvas-list-body {
+            height: 84%;
+            padding: 0.5rem;
+            overflow-y: scroll;
+        }
+
+        #canvas-list-footer {
+            height: 8%;
+            border-top: 1px solid rgb(200, 200, 200);
+        }
+
+        /* #append-canvas-button {
+            color: rgb(248, 248, 248);
+        } */
 
         #work-space {
             background: rgb(235, 208, 174);
@@ -105,10 +145,31 @@
 
         .app-button:hover {
             background: rgb(111, 174, 164);
-            padding: 0.5rem 1rem 0.5rem 1rem;
-            color: rgb(248, 248, 248);
+        }
+
+        .canvas-item {
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            color: rgb(64, 64, 64);
+            border: 2px solid rgb(200, 200, 200);
+        }
+
+        .canvas-title {
+            padding: 0;
             border: none;
-            border-radius: 0.25rem;
+            border-radius: 0;
+            outline: none;
+            background: none;
+            width: 60%;
+        }
+
+        .download-button {
+            color: rgb(248, 248, 248);
+            background: rgb(96, 159, 149);
+        }
+
+        .download-button:hover {
+            background: rgb(111, 174, 164);
         }
 
         .paint-tools-body-separator {
@@ -131,7 +192,7 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" @mouseup="onmouseup">
         <el-container id="container">
             <el-aside id="side-bar" width="200px" class="p-2">
                 <div id="timer" class="p-2 text-center">
@@ -140,11 +201,24 @@
                         <div class="mt-2" v-cloak>{{elapsedTimeString}}</div>
                     </div>
                 </div>
+                <div id="canvas-list" class="mt-3">
+                    <div id="canvas-list-header" class="d-flex align-items-center">
+                        <h5 class="mx-auto">作品一覧</h5>
+                    </div>
+                    <div id="canvas-list-body">
+                        <div v-for="canvas, index in canvases" :key="canvas.id" :style="canvas.style"
+                            class="canvas-item d-flex align-items-center my-3" @click="changeCanvas(index)">
+                            <input v-model="canvas.title" class="canvas-title" type="text">
+                            <i class="el-icon-download download-button ml-auto p-1" @click="download"></i>
+                        </div>
+                    </div>
+                    <div id="canvas-list-footer" class="p-3 d-flex align-items-center">
+                        <button class="app-button mx-auto" @click="appendCanvas('untitled')">追加</button>
+                    </div>
+                </div>
             </el-aside>
             <div id="work-space" ref="workSpace" class="p-3">
-                <div class="text-center">
-                    <canvas id="canvas" ref="canvas" class="shadow" @mousedown="beginPaint" @mousemove="draw"
-                        @mouseup="endPaint"></canvas>
+                <div ref="canvasContainer" class="text-center">
                 </div>
                 <div id="paint-tools" class="mt-3 mx-auto shadow">
                     <div id="paint-tools-header" class="d-flex align-items-center pl-2">ペイントツール</div>
@@ -203,7 +277,7 @@
                 </div>
             </div>
             <div class="mt-4 text-center">
-                <button class="app-button" @click="appendPen(strokeColor, strokeWidth)">追加</button>
+                <button class="app-button" @click="appendPen(strokeColor, strokeWidth, true)">追加</button>
             </div>
         </el-dialog>
         <el-dialog title="全消ししますか?" :visible.sync="clearCanvasConfirmDialog.visible">
@@ -235,6 +309,16 @@
             }
         }
 
+        let canvasId = 0;
+        class Canvas {
+            constructor(title, element) {
+                this.id = canvasId;
+                this.title = title;
+                this.element = element;
+                ++canvasId;
+            }
+        }
+
         let penId = 0;
         class Pen {
             constructor(strokeColor, strokeWidth) {
@@ -256,6 +340,7 @@
         ELEMENT.locale(ELEMENT.lang.ja);
         let painting = false;
         let context = null;
+        let activeCanvasIndex = null;
         let activePenIndex = null;
         const maxStrokeWidth = 20;
         const timer = new Timer(new Date());
@@ -265,6 +350,7 @@
                 strokeColor: "#000000",
                 strokeWidth: maxStrokeWidth / 2,
                 elapsedTimeString: "00:00:00",
+                canvases: [],
                 pens: [],
                 appendPenDialog: {
                     visible: false,
@@ -285,36 +371,82 @@
                 }, 1000);
             },
             mounted() {
-                const canvas = this.$refs.canvas;
-                const workSpace = this.$refs.workSpace;
-                const canvasWidth = workSpace.clientWidth * 0.8;
-                const canvasHeight = workSpace.clientHeight * 0.7;
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
-                context = canvas.getContext("2d");
-                context.lineCap = "round";
+                this.appendCanvas("untitled");
+                this.changeCanvas(0);
                 this.appendPen(this.strokeColor, this.strokeWidth);
                 this.changePen(0);
             },
-            watch: {
-
-            },
             methods: {
+                onmouseup() {
+                    if (!context || !painting) {
+                        return;
+                    }
+                    this.endPaint();
+                },
                 maxStrokeWidth() {
                     return maxStrokeWidth;
                 },
                 clearCanvas() {
-                    const canvas = this.$refs.canvas;
-                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    if (!activeCanvasIndex) {
+                        return;
+                    }
+                    const canvasElement = this.canvases[activeCanvasIndex].element;
+                    context.clearRect(0, 0, canvasElement.width, canvasElement.height);
                     this.clearCanvasConfirmDialog.visible = false;
                 },
-                appendPen(strokeColor, strokeWidth) {
+                appendCanvas(title) {
+                    const workSpace = this.$refs.workSpace;
+                    if (!workSpace) {
+                        return;
+                    }
+                    const canvasWidth = workSpace.clientWidth * 0.8;
+                    const canvasHeight = workSpace.clientHeight * 0.7;
+                    const canvasElement = document.createElement("canvas");
+                    canvasElement.id = "canvas";
+                    canvasElement.classList.add("shadow");
+                    canvasElement.width = canvasWidth;
+                    canvasElement.height = canvasHeight;
+                    canvasElement.onmousedown = this.beginPaint;
+                    canvasElement.onmousemove = this.draw;
+                    const canvas = new Canvas(title, canvasElement);
+                    this.canvases.push(canvas);
+                },
+                changeCanvas(index) {
+                    if (this.canvases.length <= index) {
+                        return;
+                    }
+                    if (activeCanvasIndex !== null) {
+                        this.canvases[activeCanvasIndex].style = {};
+                        const activeCanvasElement = this.canvases[activeCanvasIndex].element;
+                        this.$refs.canvasContainer.removeChild(activeCanvasElement);
+                    }
+                    this.canvases[index].style = {
+                        border: "2px solid rgb(101, 182, 135)"
+                    };
+                    const activeCanvasElement = this.canvases[index].element;
+                    this.$refs.canvasContainer.appendChild(activeCanvasElement);
+                    context = activeCanvasElement.getContext("2d");
+                    context.lineCap = "round";
+                    activeCanvasIndex = index;
+                    if (this.eraser.active) {
+                        this.activateEraser();
+                    } else {
+                        if (activePenIndex !== null) {
+                            this.changePen(activePenIndex);
+                        }
+                    }
+                },
+                appendPen(strokeColor, strokeWidth, change) {
                     const pen = new Pen(strokeColor, strokeWidth);
                     this.pens.push(pen);
                     this.appendPenDialog.visible = false;
+                    if (change) {
+                        this.changePen(this.pens.length - 1);
+                    }
                 },
                 changePen(index) {
                     const pen = this.pens[index];
+                    context.globalCompositeOperation = 'source-over';
                     context.strokeStyle = pen.strokeColor;
                     context.lineWidth = pen.strokeWidth;
                     activePenIndex = index;
@@ -327,7 +459,8 @@
                     this.eraser.style = {
                         border: "2px solid rgb(101, 182, 135)"
                     };
-                    context.strokeStyle = "white";
+                    // context.strokeStyle = "white";
+                    context.globalCompositeOperation = 'destination-out';
                     context.lineWidth = this.eraser.width;
                 },
                 penStyle(index) {
@@ -367,9 +500,10 @@
                 },
                 beginPaint(e) {
                     painting = true;
-                    const position = getRelativePosition(e.clientX, e.clientY, e.target);
-                    context.beginPath();
-                    context.moveTo(position.x, position.y);
+                    this.draw(e);
+                    // const position = getRelativePosition(e.clientX, e.clientY, e.target);
+                    // context.beginPath();
+                    // context.moveTo(position.x, position.y);
                 },
                 draw(e) {
                     if (!painting) {
@@ -378,9 +512,14 @@
                     const position = getRelativePosition(e.clientX, e.clientY, e.target);
                     context.lineTo(position.x, position.y);
                     context.stroke();
+                    //
+                    context.beginPath();
+                    context.moveTo(position.x, position.y);
+                    //
                 },
                 endPaint(e) {
                     painting = false;
+                    context.beginPath();
                 },
                 changedEraserWidth() {
                     if (!this.eraser.active) {
@@ -396,6 +535,17 @@
                 },
                 hideClearCanvasConfirmDialog() {
                     this.clearCanvasConfirmDialog.visible = false;
+                },
+                download() {
+                    if (activeCanvasIndex === null) {
+                        return;
+                    }
+                    const canvas = this.canvases[activeCanvasIndex];
+                    const canvasElement = canvas.element;
+                    const link = document.createElement("a");
+                    link.href = canvasElement.toDataURL("image/png");
+                    link.download = `${canvas.title}.png`;
+                    link.click();
                 },
             }
         });
