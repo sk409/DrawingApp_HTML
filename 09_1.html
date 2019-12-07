@@ -135,6 +135,10 @@
             overflow-y: scroll;
         }
 
+        #eraser {
+            width: 80%;
+        }
+
         .app-button {
             background: rgb(96, 159, 149);
             padding: 0.5rem 1rem 0.5rem 1rem;
@@ -244,11 +248,12 @@
                         </div>
                         <div class="h-100 paint-tools-body-separator"></div>
                         <div id="paint-tools-body-right" class="d-flex align-items-center text-center">
-                            <div class="w-75 mx-auto">
-                                <div :style="eraser.style" @click="activateEraser()">
+                            <div class="w-75 h-75 mx-auto">
+                                <div :style="eraser.style" class="w-75 h-75 mx-auto d-flex align-items-center"
+                                    @click="activateEraser()">
                                     <el-image id="eraser"
                                         src="https://clipart-illustration.com/highresolution/167-illustration-free.png"
-                                        fit="cover"></el-image>
+                                        fit="fit"></el-image>
                                 </div>
                                 <el-slider v-model="eraser.width" :min="1" :max="maxStrokeWidth()"
                                     @change="changedEraserWidth">
@@ -387,7 +392,7 @@
                     return maxStrokeWidth;
                 },
                 clearCanvas() {
-                    if (!activeCanvasIndex) {
+                    if (activeCanvasIndex === null) {
                         return;
                     }
                     const canvasElement = this.canvases[activeCanvasIndex].element;
