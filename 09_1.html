@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Canvas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+        }
+
+        #app {
+            height: 100%;
+        }
+
+        #container {
+            height: 100%;
+        }
+
+        #side-bar {
+            background: rgb(111, 86, 87);
+        }
+
+        #timer {
+            background: rgb(96, 159, 149);
+            color: rgb(248, 248, 248);
+            font-size: 1.2rem;
+        }
+
+        #timer-inner {
+            background: rgb(76, 139, 129);
+        }
+
+        #work-space {
+            background: rgb(235, 208, 174);
+            width: 100%;
+            height: 100%;
+        }
+
+        #canvas {
+            background: white;
+        }
+
+        #paint-tools {
+            width: 50%;
+            height: 25%;
+        }
+
+        #paint-tools-header {
+            background: rgb(175, 156, 145);
+            color: rgb(100, 76, 75);
+            font-size: 1.1rem;
+            font-weight: bold;
+            height: 20%;
+        }
+
+        #paint-tools-body {
+            background: rgb(252, 248, 229);
+            height: 80%;
+        }
+
+        #paint-tools-body-left {
+            width: 20%;
+        }
+
+        #paint-tools-body-right {
+            width: 80%;
+        }
+
+        #paint-tools-body-separator {
+            width: 1%;
+            background: rgb(175, 156, 145);
+        }
+
+        #pens-container {
+            width: 80%;
+            height: 80%;
+        }
+
+        #pen-box {
+            width: 100%;
+            height: 70%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            overflow-y: scroll;
+        }
+
+        .app-button {
+            background: rgb(96, 159, 149);
+            padding: 0.5rem 1rem 0.5rem 1rem;
+            color: rgb(248, 248, 248);
+            border: none;
+            border-radius: 0.25rem;
+        }
+
+        .pen {
+            border: 2px solid lightgray;
+        }
+
+        .pen-sample {
+            border-radius: 50%;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-container id="container">
+            <el-aside id="side-bar" width="200px" class="p-2">
+                <div id="timer" class="p-2 text-center">
+                    <div id="timer-inner" class="p-3">
+                        <div>プレイ時間</div>
+                        <div class="mt-2" v-cloak>{{elapsedTimeString}}</div>
+                    </div>
+                </div>
+            </el-aside>
+            <div id="work-space" ref="workSpace" class="p-3">
+                <div class="text-center">
+                    <canvas id="canvas" ref="canvas" class="shadow" @mousedown="beginPaint" @mousemove="draw"
+                        @mouseup="endPaint"></canvas>
+                </div>
+                <div id="paint-tools" class="mt-3 mx-auto shadow">
+                    <div id="paint-tools-header" class="d-flex align-items-center pl-2">ペイントツール</div>
+                    <div id="paint-tools-body" class="d-flex">
+                        <div id="paint-tools-body-left" class="h-100">
+                        </div>
+                        <div id="paint-tools-body-separator" class="h-100"></div>
+                        <div id="paint-tools-body-right" class="d-flex align-items-center h-100">
+                            <div id="pens-container" class="mx-auto">
+                                <div id="pen-box" class="border border-secondary">
+                                    <div v-for="pen, index in pens" ref="pens" :key="pen.id" :style="penStyle(index)"
+                                        class="pen d-flex align-items-center m-1" @click="changePen(index)">
+                                        <div :style="penSampleStyle(index)" class="pen-sample mx-auto"></div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-1">
+                                    <button class="app-button" @click="showAppendPenDialog">追加</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-container>
+        <el-dialog title="ペンを追加" :visible.sync="appendPenDialog.visible">
+            <div class="border p-3">
+                <div>
+                    <h6>色</h6>
+                    <el-divider class="my-1"></el-divider>
+                    <div class="text-center mt-2">
+                        <el-color-picker v-model="strokeColor"></el-color-picker>
+                    </div>
+                    <div class="text-center">{{strokeColor}}</div>
+                </div>
+                <div>
+                    <h6>太さ</h6>
+                    <el-divider class="my-1"></el-divider>
+                    <el-slider v-model="strokeWidth" :min="1" :max="maxStrokeWidth()"></el-slider>
+                    <div class="text-center">{{strokeWidth}}</div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <button class="app-button" @click="appendPen(strokeColor, strokeWidth)">追加</button>
+            </div>
+        </el-dialog>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="http://unpkg.com/element-ui/lib/umd/locale/ja.js"></script>
+    <script>
+        class Timer {
+            constructor(start) {
+                this.start = start;
+            }
+
+            elapsedTimeString() {
+                const now = new Date();
+                const diff = (now.getTime() - this.start.getTime()) / 1000;
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor(diff % 3600 / 60);
+                const seconds = Math.floor(diff % 3600 % 60);
+                const hoursString = hours < 10 ? `0${hours}` : hours;
+                const minutesString = minutes < 10 ? `0${minutes}` : minutes;
+                const secondsString = seconds < 10 ? `0${seconds}` : seconds;
+                return `${hoursString}:${minutesString}:${secondsString}`;
+            }
+        }
+
+        let penId = 0;
+        class Pen {
+            constructor(strokeColor, strokeWidth) {
+                this.id = penId;
+                this.strokeColor = strokeColor;
+                this.strokeWidth = strokeWidth;
+                ++penId;
+            }
+        }
+
+        function getRelativePosition(absoluteX, absoluteY, element) {
+            const clientRect = element.getBoundingClientRect();
+            return {
+                x: absoluteX - clientRect.left,
+                y: absoluteY - clientRect.top
+            };
+        }
+
+        ELEMENT.locale(ELEMENT.lang.ja);
+        let painting = false;
+        let context = null;
+        let activePenIndex = null;
+        const maxStrokeWidth = 20;
+        const timer = new Timer(new Date());
+        new Vue({
+            el: "#app",
+            data: {
+                strokeColor: "#000000",
+                strokeWidth: maxStrokeWidth / 2,
+                elapsedTimeString: "00:00:00",
+                pens: [],
+                appendPenDialog: {
+                    visible: false,
+                }
+            },
+            created() {
+                const that = this;
+                setInterval(() => {
+                    that.elapsedTimeString = timer.elapsedTimeString();
+                }, 1000);
+            },
+            mounted() {
+                const canvas = this.$refs.canvas;
+                const workSpace = this.$refs.workSpace;
+                const canvasWidth = workSpace.clientWidth * 0.8;
+                const canvasHeight = workSpace.clientHeight * 0.7;
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+                context = canvas.getContext("2d");
+                context.lineCap = "round";
+                this.appendPen(this.strokeColor, this.strokeWidth);
+                this.changePen(0);
+            },
+            methods: {
+                maxStrokeWidth() {
+                    return maxStrokeWidth;
+                },
+                appendPen(strokeColor, strokeWidth) {
+                    const pen = new Pen(strokeColor, strokeWidth);
+                    this.pens.push(pen);
+                    this.appendPenDialog.visible = false;
+                },
+                changePen(index) {
+                    const pen = this.pens[index];
+                    context.strokeStyle = pen.strokeColor;
+                    context.lineWidth = pen.strokeWidth;
+                    activePenIndex = index;
+                },
+                penStyle(index) {
+                    const pens = this.$refs.pens;
+                    if (!pens) {
+                        return;
+                    }
+                    const pen = this.$refs.pens[index];
+                    if (!pen) {
+                        return;
+                    }
+                    const style = {
+                        height: `${pen.clientWidth}px`,
+                    };
+                    if (index === activePenIndex) {
+                        style.borderColor = "rgb(101, 182, 135)";
+                    }
+                    return style;
+                },
+                penSampleStyle(index) {
+                    const pens = this.$refs.pens;
+                    if (!pens) {
+                        return;
+                    }
+                    const pen = this.$refs.pens[index];
+                    if (!pen) {
+                        return;
+                    }
+                    const strokeWidth = this.pens[index].strokeWidth;
+                    const width = pen.clientWidth * 0.95 * strokeWidth / maxStrokeWidth;
+                    const height = width;
+                    return {
+                        width: `${width}px`,
+                        height: `${height}px`,
+                        background: this.pens[index].strokeColor
+                    };
+                },
+                beginPaint(e) {
+                    painting = true;
+                    const position = getRelativePosition(e.clientX, e.clientY, e.target);
+                    context.beginPath();
+                    context.moveTo(position.x, position.y);
+                },
+                draw(e) {
+                    if (!painting) {
+                        return;
+                    }
+                    const position = getRelativePosition(e.clientX, e.clientY, e.target);
+                    context.lineTo(position.x, position.y);
+                    context.stroke();
+                },
+                endPaint(e) {
+                    painting = false;
+                },
+                showAppendPenDialog() {
+                    this.appendPenDialog.visible = true;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
