@@ -1,560 +1,715 @@
 <!DOCTYPE html>
 <html lang="ja">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Canvas</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
 
-        ::-webkit-scrollbar-track {
-            border-radius: 10px;
-            box-shadow: inset 0 0 6px rgb(100, 100, 100);
-        }
+      ::-webkit-scrollbar-track {
+        border-radius: 10px;
+        box-shadow: inset 0 0 6px rgb(100, 100, 100);
+      }
 
-        ::-webkit-scrollbar-thumb {
-            background-color: rgb(150, 150, 150);
-            border-radius: 10px;
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, .3);
-        }
+      ::-webkit-scrollbar-thumb {
+        background-color: rgb(150, 150, 150);
+        border-radius: 10px;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+      }
 
-        body {
-            height: 100vh;
-        }
+      body {
+        height: 100vh;
+      }
 
-        #app {
-            height: 100%;
-        }
+      #app {
+        height: 100%;
+      }
 
-        #container {
-            height: 100%;
-        }
+      #container {
+        height: 100%;
+      }
 
-        #side-bar {
-            background: rgb(111, 86, 87);
-        }
+      #side-bar {
+        background: rgb(111, 86, 87);
+      }
 
-        #timer {
-            background: rgb(96, 159, 149);
-            color: rgb(248, 248, 248);
-            font-size: 1.2rem;
-        }
+      #timer {
+        background: rgb(96, 159, 149);
+        color: rgb(248, 248, 248);
+        font-size: 1.2rem;
+      }
 
-        #timer-inner {
-            background: rgb(76, 139, 129);
-        }
+      #timer-inner {
+        background: rgb(76, 139, 129);
+      }
 
-        #canvas-list {
-            height: 82%;
-            background: rgb(132, 107, 107);
-        }
+      #canvas-list {
+        height: 82%;
+        background: rgb(132, 107, 107);
+      }
 
-        #canvas-list-header {
-            height: 8%;
-            border-bottom: 1px solid rgb(200, 200, 200);
-        }
+      #canvas-list-header {
+        height: 8%;
+        border-bottom: 1px solid rgb(200, 200, 200);
+      }
 
-        #canvas-list-body {
-            height: 84%;
-            padding: 0.5rem;
-            overflow-y: scroll;
-        }
+      #canvas-list-body {
+        height: 84%;
+        padding: 0.5rem;
+        overflow-y: scroll;
+      }
 
-        #canvas-list-footer {
-            height: 8%;
-            border-top: 1px solid rgb(200, 200, 200);
-        }
+      #canvas-list-footer {
+        height: 8%;
+        border-top: 1px solid rgb(200, 200, 200);
+      }
 
-        /* #append-canvas-button {
+      /* #append-canvas-button {
             color: rgb(248, 248, 248);
         } */
 
-        #work-space {
-            background: rgb(235, 208, 174);
-            width: 100%;
-            height: 100%;
-        }
+      #work-space {
+        background: rgb(235, 208, 174);
+        width: 100%;
+        height: 100%;
+      }
 
-        #canvas {
-            background: white;
-        }
+      #canvas {
+        background: white;
+      }
 
-        #paint-tools {
-            width: 70%;
-            height: 25%;
-        }
+      #paint-tools {
+        width: 70%;
+        height: 25%;
+      }
 
-        #paint-tools-header {
-            background: rgb(175, 156, 145);
-            color: rgb(100, 76, 75);
-            font-size: 1.1rem;
-            font-weight: bold;
-            height: 20%;
-        }
+      #paint-tools-header {
+        background: rgb(175, 156, 145);
+        color: rgb(100, 76, 75);
+        font-size: 1.1rem;
+        font-weight: bold;
+        height: 20%;
+      }
 
-        #paint-tools-body {
-            background: rgb(252, 248, 229);
-            height: 80%;
-        }
+      #paint-tools-body {
+        background: rgb(252, 248, 229);
+        height: 80%;
+      }
 
-        #paint-tools-body-left {
-            width: 20%;
-        }
+      #paint-tools-body-left {
+        width: 20%;
+      }
 
-        #paint-tools-body-center {
-            width: 60%;
-        }
+      #paint-tools-body-center {
+        width: 60%;
+      }
 
-        #paint-tools-body-right {
-            width: 20%;
-        }
+      #paint-tools-body-right {
+        width: 20%;
+      }
 
-        #pens-container {
-            width: 80%;
-            height: 80%;
-        }
+      #pens-container {
+        width: 80%;
+        height: 80%;
+      }
 
-        #pen-box {
-            width: 100%;
-            height: 70%;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            overflow-y: scroll;
-        }
+      #pen-box {
+        width: 100%;
+        height: 70%;
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        overflow-y: scroll;
+      }
 
-        #eraser {
-            width: 80%;
-        }
+      #eraser {
+        width: 80%;
+      }
 
-        .app-button {
-            background: rgb(96, 159, 149);
-            padding: 0.5rem 1rem 0.5rem 1rem;
-            color: rgb(248, 248, 248);
-            border: none;
-            border-radius: 0.25rem;
-        }
+      .app-button {
+        background: rgb(96, 159, 149);
+        padding: 0.5rem 1rem 0.5rem 1rem;
+        color: rgb(248, 248, 248);
+        border: none;
+        border-radius: 0.25rem;
+      }
 
-        .app-button:hover {
-            background: rgb(111, 174, 164);
-        }
+      .app-button:hover {
+        background: rgb(111, 174, 164);
+      }
 
-        .canvas-item {
-            padding: 0.5rem;
-            font-size: 1.2rem;
-            color: rgb(64, 64, 64);
-            border: 2px solid rgb(200, 200, 200);
-        }
+      .disabled {
+        background: rgb(200, 200, 200);
+      }
 
-        .canvas-title {
-            padding: 0;
-            border: none;
-            border-radius: 0;
-            outline: none;
-            background: none;
-            width: 60%;
-        }
+      .disabled:hover:hover {
+        background: rgb(200, 200, 200);
+      }
 
-        .download-button {
-            color: rgb(248, 248, 248);
-            background: rgb(96, 159, 149);
-        }
+      .canvas-item {
+        padding: 0.5rem;
+        font-size: 1.2rem;
+        color: rgb(64, 64, 64);
+        border: 2px solid rgb(200, 200, 200);
+      }
 
-        .download-button:hover {
-            background: rgb(111, 174, 164);
-        }
+      .canvas-title {
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        outline: none;
+        background: none;
+        width: 60%;
+      }
 
-        .paint-tools-body-separator {
-            width: 1%;
-            background: rgb(175, 156, 145);
-        }
+      .download-button {
+        color: rgb(248, 248, 248);
+        background: rgb(96, 159, 149);
+      }
 
-        .pen {
-            border: 2px solid lightgray;
-        }
+      .download-button:hover {
+        background: rgb(111, 174, 164);
+      }
 
-        .pen-sample {
-            border-radius: 50%;
-        }
+      .paint-tools-body-separator {
+        width: 1%;
+        background: rgb(175, 156, 145);
+      }
 
-        [v-cloak] {
-            display: none;
-        }
+      .pen {
+        border: 2px solid lightgray;
+      }
+
+      .pen-sample {
+        border-radius: 50%;
+      }
+
+      [v-cloak] {
+        display: none;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app" @mouseup="onmouseup">
-        <el-container id="container">
-            <el-aside id="side-bar" width="200px" class="p-2">
-                <div id="timer" class="p-2 text-center">
-                    <div id="timer-inner" class="p-3">
-                        <div>プレイ時間</div>
-                        <div class="mt-2" v-cloak>{{elapsedTimeString}}</div>
-                    </div>
-                </div>
-                <div id="canvas-list" class="mt-3">
-                    <div id="canvas-list-header" class="d-flex align-items-center">
-                        <h5 class="mx-auto">作品一覧</h5>
-                    </div>
-                    <div id="canvas-list-body">
-                        <div v-for="canvas, index in canvases" :key="canvas.id" :style="canvas.style"
-                            class="canvas-item d-flex align-items-center my-3" @click="changeCanvas(index)">
-                            <input v-model="canvas.title" class="canvas-title" type="text">
-                            <i class="el-icon-download download-button ml-auto p-1" @click="download"></i>
-                        </div>
-                    </div>
-                    <div id="canvas-list-footer" class="p-3 d-flex align-items-center">
-                        <button class="app-button mx-auto" @click="appendCanvas('untitled')">追加</button>
-                    </div>
-                </div>
-            </el-aside>
-            <div id="work-space" ref="workSpace" class="p-3">
-                <div ref="canvasContainer" class="text-center">
-                </div>
-                <div id="paint-tools" class="mt-3 mx-auto shadow">
-                    <div id="paint-tools-header" class="d-flex align-items-center pl-2">ペイントツール</div>
-                    <div id="paint-tools-body" class="d-flex">
-                        <div id="paint-tools-body-left" class="h-100 p-2">
-                            <div class="text-center">
-                                <button class="app-button px-2 py-1" @click="showClearCanvasConfirmDialog">全消し</button>
-                            </div>
-                        </div>
-                        <div class="h-100 paint-tools-body-separator"></div>
-                        <div id="paint-tools-body-center" class="d-flex align-items-center h-100">
-                            <div id="pens-container" class="mx-auto">
-                                <div id="pen-box" class="border border-secondary">
-                                    <div v-for="pen, index in pens" ref="pens" :key="pen.id" :style="penStyle(index)"
-                                        class="pen d-flex align-items-center m-1" @click="changePen(index)">
-                                        <div :style="penSampleStyle(index)" class="pen-sample mx-auto"></div>
-                                    </div>
-                                </div>
-                                <div class="text-center mt-1">
-                                    <button class="app-button" @click="showAppendPenDialog">追加</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="h-100 paint-tools-body-separator"></div>
-                        <div id="paint-tools-body-right" class="d-flex align-items-center text-center">
-                            <div class="w-75 h-75 mx-auto">
-                                <div :style="eraser.style" class="w-75 h-75 mx-auto d-flex align-items-center"
-                                    @click="activateEraser()">
-                                    <el-image id="eraser"
-                                        src="https://clipart-illustration.com/highresolution/167-illustration-free.png"
-                                        fit="fit"></el-image>
-                                </div>
-                                <el-slider v-model="eraser.width" :min="1" :max="maxStrokeWidth()"
-                                    @change="changedEraserWidth">
-                                </el-slider>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <el-container id="container">
+        <el-aside id="side-bar" width="200px" class="p-2">
+          <div id="timer" class="p-2 text-center">
+            <div id="timer-inner" class="p-3">
+              <div>プレイ時間</div>
+              <div class="mt-2" v-cloak>{{elapsedTimeString}}</div>
             </div>
-        </el-container>
-        <el-dialog title="ペンを追加" :visible.sync="appendPenDialog.visible">
-            <div class="border p-3">
-                <div>
-                    <h6>色</h6>
-                    <el-divider class="my-1"></el-divider>
-                    <div class="text-center mt-2">
-                        <el-color-picker v-model="strokeColor"></el-color-picker>
+          </div>
+          <div id="canvas-list" class="mt-3">
+            <div id="canvas-list-header" class="d-flex align-items-center">
+              <h5 class="mx-auto">作品一覧</h5>
+            </div>
+            <div id="canvas-list-body">
+              <div
+                v-for="canvas, index in canvases"
+                :key="canvas.id"
+                :style="canvas.style"
+                class="canvas-item d-flex align-items-center my-3"
+                @click="changeCanvas(index)"
+              >
+                <input
+                  v-model="canvas.title"
+                  class="canvas-title"
+                  type="text"
+                />
+                <i
+                  class="el-icon-download download-button ml-auto p-1"
+                  @click="download"
+                ></i>
+              </div>
+            </div>
+            <div id="canvas-list-footer" class="p-3 d-flex align-items-center">
+              <button
+                class="app-button mx-auto"
+                @click="appendCanvas('untitled')"
+              >
+                追加
+              </button>
+            </div>
+          </div>
+        </el-aside>
+        <div id="work-space" ref="workSpace" class="p-3">
+          <div ref="canvasContainer" class="text-center"></div>
+          <div id="paint-tools" class="mt-3 mx-auto shadow">
+            <div id="paint-tools-header" class="d-flex align-items-center pl-2">
+              ペイントツール
+            </div>
+            <div id="paint-tools-body" class="d-flex">
+              <div id="paint-tools-body-left" class="h-100 p-2">
+                <div class="text-center">
+                  <div>
+                    <button
+                      :class="{disabled:!history || !history.undoable()}"
+                      class="app-button px-2 py-1"
+                      @click="undo()"
+                    >
+                      戻る
+                    </button>
+                  </div>
+                  <div class="mt-2">
+                    <button
+                      :class="{disabled:!history || !history.redoable()}"
+                      class="app-button px-2 py-1"
+                      @click="redo()"
+                    >
+                      進む
+                    </button>
+                  </div>
+                  <div class="mt-2">
+                    <button class="app-button px-2 py-1" @click="clearCanvas">
+                      全消し
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="h-100 paint-tools-body-separator"></div>
+              <div
+                id="paint-tools-body-center"
+                class="d-flex align-items-center h-100"
+              >
+                <div id="pens-container" class="mx-auto">
+                  <div id="pen-box" class="border border-secondary">
+                    <div
+                      v-for="pen, index in pens"
+                      ref="pens"
+                      :key="pen.id"
+                      :style="penStyle(index)"
+                      class="pen d-flex align-items-center m-1"
+                      @click="changePen(index)"
+                    >
+                      <div
+                        :style="penSampleStyle(index)"
+                        class="pen-sample mx-auto"
+                      ></div>
                     </div>
-                    <div class="text-center">{{strokeColor}}</div>
+                  </div>
+                  <div class="text-center mt-1">
+                    <button class="app-button" @click="showAppendPenDialog">
+                      追加
+                    </button>
+                  </div>
                 </div>
-                <div>
-                    <h6>太さ</h6>
-                    <el-divider class="my-1"></el-divider>
-                    <el-slider v-model="strokeWidth" :min="1" :max="maxStrokeWidth()"></el-slider>
-                    <div class="text-center">{{strokeWidth}}</div>
+              </div>
+              <div class="h-100 paint-tools-body-separator"></div>
+              <div
+                id="paint-tools-body-right"
+                class="d-flex align-items-center text-center"
+              >
+                <div class="w-75 h-75 mx-auto">
+                  <div
+                    :style="eraser.style"
+                    class="w-75 h-75 mx-auto d-flex align-items-center"
+                    @click="activateEraser()"
+                  >
+                    <el-image
+                      id="eraser"
+                      src="https://clipart-illustration.com/highresolution/167-illustration-free.png"
+                      fit="fit"
+                    ></el-image>
+                  </div>
+                  <el-slider
+                    v-model="eraser.width"
+                    :min="1"
+                    :max="maxStrokeWidth()"
+                    @change="changedEraserWidth"
+                  >
+                  </el-slider>
                 </div>
+              </div>
             </div>
-            <div class="mt-4 text-center">
-                <button class="app-button" @click="appendPen(strokeColor, strokeWidth, true)">追加</button>
+          </div>
+        </div>
+      </el-container>
+      <el-dialog title="ペンを追加" :visible.sync="appendPenDialog.visible">
+        <div class="border p-3">
+          <div>
+            <h6>色</h6>
+            <el-divider class="my-1"></el-divider>
+            <div class="text-center mt-2">
+              <el-color-picker v-model="strokeColor"></el-color-picker>
             </div>
-        </el-dialog>
-        <el-dialog title="全消ししますか?" :visible.sync="clearCanvasConfirmDialog.visible">
-            <div class="text-center">
-                <el-button type="danger" @click="clearCanvas">OK</el-button>
-                <button class="app-button ml-2" @click="hideClearCanvasConfirmDialog">キャンセル</button>
-            </div>
-        </el-dialog>
+            <div class="text-center">{{strokeColor}}</div>
+          </div>
+          <div>
+            <h6>太さ</h6>
+            <el-divider class="my-1"></el-divider>
+            <el-slider
+              v-model="strokeWidth"
+              :min="1"
+              :max="maxStrokeWidth()"
+            ></el-slider>
+            <div class="text-center">{{strokeWidth}}</div>
+          </div>
+        </div>
+        <div class="mt-4 text-center">
+          <button
+            class="app-button"
+            @click="appendPen(strokeColor, strokeWidth, true)"
+          >
+            追加
+          </button>
+        </div>
+      </el-dialog>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <script src="http://unpkg.com/element-ui/lib/umd/locale/ja.js"></script>
     <script>
-        class Timer {
-            constructor(start) {
-                this.start = start;
-            }
-
-            elapsedTimeString() {
-                const now = new Date();
-                const diff = (now.getTime() - this.start.getTime()) / 1000;
-                const hours = Math.floor(diff / 3600);
-                const minutes = Math.floor(diff % 3600 / 60);
-                const seconds = Math.floor(diff % 3600 % 60);
-                const hoursString = hours < 10 ? `0${hours}` : hours;
-                const minutesString = minutes < 10 ? `0${minutes}` : minutes;
-                const secondsString = seconds < 10 ? `0${seconds}` : seconds;
-                return `${hoursString}:${minutesString}:${secondsString}`;
-            }
+      class Timer {
+        constructor(start) {
+          this.start = start;
         }
 
-        let canvasId = 0;
-        class Canvas {
-            constructor(title, element) {
-                this.id = canvasId;
-                this.title = title;
-                this.element = element;
-                ++canvasId;
-            }
+        elapsedTimeString() {
+          const now = new Date();
+          const diff = (now.getTime() - this.start.getTime()) / 1000;
+          const hours = Math.floor(diff / 3600);
+          const minutes = Math.floor((diff % 3600) / 60);
+          const seconds = Math.floor((diff % 3600) % 60);
+          const hoursString = hours < 10 ? `0${hours}` : hours;
+          const minutesString = minutes < 10 ? `0${minutes}` : minutes;
+          const secondsString = seconds < 10 ? `0${seconds}` : seconds;
+          return `${hoursString}:${minutesString}:${secondsString}`;
+        }
+      }
+
+      let canvasId = 0;
+      class Canvas {
+        constructor(title, element) {
+          this.id = canvasId;
+          this.title = title;
+          this.element = element;
+          ++canvasId;
+        }
+      }
+
+      let penId = 0;
+      class Pen {
+        constructor(strokeColor, strokeWidth) {
+          this.id = penId;
+          this.strokeColor = strokeColor;
+          this.strokeWidth = strokeWidth;
+          ++penId;
+        }
+      }
+
+      class History {
+        constructor() {
+          this.pointer = -1;
+          this.stack = [];
         }
 
-        let penId = 0;
-        class Pen {
-            constructor(strokeColor, strokeWidth) {
-                this.id = penId;
-                this.strokeColor = strokeColor;
-                this.strokeWidth = strokeWidth;
-                ++penId;
-            }
+        push(imageData) {
+          this.stack = this.stack.slice(0, this.pointer + 1);
+          this.stack.push(imageData);
+          ++this.pointer;
         }
 
-        function getRelativePosition(absoluteX, absoluteY, element) {
-            const clientRect = element.getBoundingClientRect();
-            return {
-                x: absoluteX - clientRect.left,
-                y: absoluteY - clientRect.top
+        undoable() {
+          return this.pointer !== 0;
+        }
+
+        redoable() {
+          return this.pointer !== this.stack.length - 1;
+        }
+
+        undo() {
+          if (!this.undoable()) {
+            return false;
+          }
+          --this.pointer;
+          return this.stack[this.pointer];
+        }
+
+        redo() {
+          if (!this.redoable()) {
+            return false;
+          }
+          ++this.pointer;
+          return this.stack[this.pointer];
+        }
+
+        size() {
+          return this.stack.length;
+        }
+      }
+
+      function getRelativePosition(absoluteX, absoluteY, element) {
+        const clientRect = element.getBoundingClientRect();
+        return {
+          x: absoluteX - clientRect.left,
+          y: absoluteY - clientRect.top
+        };
+      }
+
+      ELEMENT.locale(ELEMENT.lang.ja);
+      let painting = false;
+      let context = null;
+      let activeCanvasIndex = null;
+      let activePenIndex = null;
+      const maxStrokeWidth = 20;
+      const histories = {};
+      const timer = new Timer(new Date());
+      new Vue({
+        el: "#app",
+        data: {
+          strokeColor: "#000000",
+          strokeWidth: maxStrokeWidth / 2,
+          elapsedTimeString: "00:00:00",
+          history: null,
+          canvases: [],
+          pens: [],
+          appendPenDialog: {
+            visible: false
+          },
+          eraser: {
+            active: false,
+            width: maxStrokeWidth / 2,
+            style: null
+          }
+        },
+        created() {
+          const that = this;
+          setInterval(() => {
+            that.elapsedTimeString = timer.elapsedTimeString();
+          }, 1000);
+        },
+        mounted() {
+          this.appendCanvas("untitled");
+          this.changeCanvas(0);
+          this.appendPen(this.strokeColor, this.strokeWidth);
+          this.changePen(0);
+        },
+        methods: {
+          onmouseup() {
+            if (!context || !painting) {
+              return;
+            }
+            this.endPaint();
+          },
+          maxStrokeWidth() {
+            return maxStrokeWidth;
+          },
+          clearCanvas() {
+            if (activeCanvasIndex === null) {
+              return;
+            }
+            const canvasElement = this.canvases[activeCanvasIndex].element;
+            context.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            this.history.push(
+              context.getImageData(
+                0,
+                0,
+                canvasElement.clientWidth,
+                canvasElement.clientHeight
+              )
+            );
+          },
+          appendCanvas(title) {
+            const workSpace = this.$refs.workSpace;
+            if (!workSpace) {
+              return;
+            }
+            const canvasWidth = workSpace.clientWidth * 0.8;
+            const canvasHeight = workSpace.clientHeight * 0.7;
+            const canvasElement = document.createElement("canvas");
+            canvasElement.id = "canvas";
+            canvasElement.classList.add("shadow");
+            canvasElement.width = canvasWidth;
+            canvasElement.height = canvasHeight;
+            canvasElement.onmousedown = this.beginPaint;
+            canvasElement.onmousemove = this.draw;
+            const canvas = new Canvas(title, canvasElement);
+            this.canvases.push(canvas);
+            const history = new History();
+            history.push(
+              canvasElement
+                .getContext("2d")
+                .getImageData(0, 0, canvasWidth, canvasHeight)
+            );
+            histories[canvas.id] = history;
+          },
+          changeCanvas(index) {
+            if (this.canvases.length <= index) {
+              return;
+            }
+            if (activeCanvasIndex !== null) {
+              this.canvases[activeCanvasIndex].style = {};
+              const activeCanvasElement = this.canvases[activeCanvasIndex]
+                .element;
+              this.$refs.canvasContainer.removeChild(activeCanvasElement);
+            }
+            const canvas = this.canvases[index];
+            canvas.style = {
+              border: "2px solid rgb(101, 182, 135)"
             };
-        }
-
-        ELEMENT.locale(ELEMENT.lang.ja);
-        let painting = false;
-        let context = null;
-        let activeCanvasIndex = null;
-        let activePenIndex = null;
-        const maxStrokeWidth = 20;
-        const timer = new Timer(new Date());
-        new Vue({
-            el: "#app",
-            data: {
-                strokeColor: "#000000",
-                strokeWidth: maxStrokeWidth / 2,
-                elapsedTimeString: "00:00:00",
-                canvases: [],
-                pens: [],
-                appendPenDialog: {
-                    visible: false,
-                },
-                clearCanvasConfirmDialog: {
-                    visible: false,
-                },
-                eraser: {
-                    active: false,
-                    width: maxStrokeWidth / 2,
-                    style: null
-                }
-            },
-            created() {
-                const that = this;
-                setInterval(() => {
-                    that.elapsedTimeString = timer.elapsedTimeString();
-                }, 1000);
-            },
-            mounted() {
-                this.appendCanvas("untitled");
-                this.changeCanvas(0);
-                this.appendPen(this.strokeColor, this.strokeWidth);
-                this.changePen(0);
-            },
-            methods: {
-                onmouseup() {
-                    if (!context || !painting) {
-                        return;
-                    }
-                    this.endPaint();
-                },
-                maxStrokeWidth() {
-                    return maxStrokeWidth;
-                },
-                clearCanvas() {
-                    if (activeCanvasIndex === null) {
-                        return;
-                    }
-                    const canvasElement = this.canvases[activeCanvasIndex].element;
-                    context.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                    this.clearCanvasConfirmDialog.visible = false;
-                },
-                appendCanvas(title) {
-                    const workSpace = this.$refs.workSpace;
-                    if (!workSpace) {
-                        return;
-                    }
-                    const canvasWidth = workSpace.clientWidth * 0.8;
-                    const canvasHeight = workSpace.clientHeight * 0.7;
-                    const canvasElement = document.createElement("canvas");
-                    canvasElement.id = "canvas";
-                    canvasElement.classList.add("shadow");
-                    canvasElement.width = canvasWidth;
-                    canvasElement.height = canvasHeight;
-                    canvasElement.onmousedown = this.beginPaint;
-                    canvasElement.onmousemove = this.draw;
-                    const canvas = new Canvas(title, canvasElement);
-                    this.canvases.push(canvas);
-                },
-                changeCanvas(index) {
-                    if (this.canvases.length <= index) {
-                        return;
-                    }
-                    if (activeCanvasIndex !== null) {
-                        this.canvases[activeCanvasIndex].style = {};
-                        const activeCanvasElement = this.canvases[activeCanvasIndex].element;
-                        this.$refs.canvasContainer.removeChild(activeCanvasElement);
-                    }
-                    this.canvases[index].style = {
-                        border: "2px solid rgb(101, 182, 135)"
-                    };
-                    const activeCanvasElement = this.canvases[index].element;
-                    this.$refs.canvasContainer.appendChild(activeCanvasElement);
-                    context = activeCanvasElement.getContext("2d");
-                    context.lineCap = "round";
-                    activeCanvasIndex = index;
-                    if (this.eraser.active) {
-                        this.activateEraser();
-                    } else {
-                        if (activePenIndex !== null) {
-                            this.changePen(activePenIndex);
-                        }
-                    }
-                },
-                appendPen(strokeColor, strokeWidth, change) {
-                    const pen = new Pen(strokeColor, strokeWidth);
-                    this.pens.push(pen);
-                    this.appendPenDialog.visible = false;
-                    if (change) {
-                        this.changePen(this.pens.length - 1);
-                    }
-                },
-                changePen(index) {
-                    const pen = this.pens[index];
-                    context.globalCompositeOperation = 'source-over';
-                    context.strokeStyle = pen.strokeColor;
-                    context.lineWidth = pen.strokeWidth;
-                    activePenIndex = index;
-                    this.eraser.active = false;
-                    this.eraser.style = {};
-                },
-                activateEraser() {
-                    activePenIndex = null;
-                    this.eraser.active = true;
-                    this.eraser.style = {
-                        border: "2px solid rgb(101, 182, 135)"
-                    };
-                    // context.strokeStyle = "white";
-                    context.globalCompositeOperation = 'destination-out';
-                    context.lineWidth = this.eraser.width;
-                },
-                penStyle(index) {
-                    const pens = this.$refs.pens;
-                    if (!pens) {
-                        return;
-                    }
-                    const pen = this.$refs.pens[index];
-                    if (!pen) {
-                        return;
-                    }
-                    const style = {
-                        height: `${pen.clientWidth}px`,
-                    };
-                    if (index === activePenIndex) {
-                        style.borderColor = "rgb(101, 182, 135)";
-                    }
-                    return style;
-                },
-                penSampleStyle(index) {
-                    const pens = this.$refs.pens;
-                    if (!pens) {
-                        return;
-                    }
-                    const pen = this.$refs.pens[index];
-                    if (!pen) {
-                        return;
-                    }
-                    const strokeWidth = this.pens[index].strokeWidth;
-                    const width = pen.clientWidth * 0.95 * strokeWidth / maxStrokeWidth;
-                    const height = width;
-                    return {
-                        width: `${width}px`,
-                        height: `${height}px`,
-                        background: this.pens[index].strokeColor
-                    };
-                },
-                beginPaint(e) {
-                    painting = true;
-                    this.draw(e);
-                    // const position = getRelativePosition(e.clientX, e.clientY, e.target);
-                    // context.beginPath();
-                    // context.moveTo(position.x, position.y);
-                },
-                draw(e) {
-                    if (!painting) {
-                        return;
-                    }
-                    const position = getRelativePosition(e.clientX, e.clientY, e.target);
-                    context.lineTo(position.x, position.y);
-                    context.stroke();
-                    //
-                    context.beginPath();
-                    context.moveTo(position.x, position.y);
-                    //
-                },
-                endPaint(e) {
-                    painting = false;
-                    context.beginPath();
-                },
-                changedEraserWidth() {
-                    if (!this.eraser.active) {
-                        return
-                    }
-                    context.lineWidth = this.eraser.width;
-                },
-                showAppendPenDialog() {
-                    this.appendPenDialog.visible = true;
-                },
-                showClearCanvasConfirmDialog() {
-                    this.clearCanvasConfirmDialog.visible = true;
-                },
-                hideClearCanvasConfirmDialog() {
-                    this.clearCanvasConfirmDialog.visible = false;
-                },
-                download() {
-                    if (activeCanvasIndex === null) {
-                        return;
-                    }
-                    const canvas = this.canvases[activeCanvasIndex];
-                    const canvasElement = canvas.element;
-                    const link = document.createElement("a");
-                    link.href = canvasElement.toDataURL("image/png");
-                    link.download = `${canvas.title}.png`;
-                    link.click();
-                },
+            const activeCanvasElement = canvas.element;
+            const canvasContainer = this.$refs.canvasContainer;
+            canvasContainer.appendChild(activeCanvasElement);
+            context = activeCanvasElement.getContext("2d");
+            context.lineCap = "round";
+            activeCanvasIndex = index;
+            if (this.eraser.active) {
+              this.activateEraser();
+            } else {
+              if (activePenIndex !== null) {
+                this.changePen(activePenIndex);
+              }
             }
-        });
+            this.history = histories[canvas.id];
+          },
+          appendPen(strokeColor, strokeWidth, change) {
+            const pen = new Pen(strokeColor, strokeWidth);
+            this.pens.push(pen);
+            this.appendPenDialog.visible = false;
+            if (change) {
+              this.changePen(this.pens.length - 1);
+            }
+          },
+          changePen(index) {
+            const pen = this.pens[index];
+            context.globalCompositeOperation = "source-over";
+            context.strokeStyle = pen.strokeColor;
+            context.lineWidth = pen.strokeWidth;
+            activePenIndex = index;
+            this.eraser.active = false;
+            this.eraser.style = {};
+          },
+          activateEraser() {
+            if (this.eraser.active) {
+              return;
+            }
+            activePenIndex = null;
+            this.eraser.active = true;
+            this.eraser.style = {
+              border: "2px solid rgb(101, 182, 135)"
+            };
+            context.globalCompositeOperation = "destination-out";
+            context.lineWidth = this.eraser.width;
+          },
+          penStyle(index) {
+            const pens = this.$refs.pens;
+            if (!pens) {
+              return;
+            }
+            const pen = this.$refs.pens[index];
+            if (!pen) {
+              return;
+            }
+            const style = {
+              height: `${pen.clientWidth}px`
+            };
+            if (index === activePenIndex) {
+              style.borderColor = "rgb(101, 182, 135)";
+            }
+            return style;
+          },
+          penSampleStyle(index) {
+            const pens = this.$refs.pens;
+            if (!pens) {
+              return;
+            }
+            const pen = this.$refs.pens[index];
+            if (!pen) {
+              return;
+            }
+            const strokeWidth = this.pens[index].strokeWidth;
+            const width =
+              (pen.clientWidth * 0.95 * strokeWidth) / maxStrokeWidth;
+            const height = width;
+            return {
+              width: `${width}px`,
+              height: `${height}px`,
+              background: this.pens[index].strokeColor
+            };
+          },
+          beginPaint(e) {
+            painting = true;
+            this.draw(e);
+          },
+          draw(e) {
+            if (!painting) {
+              return;
+            }
+            const position = getRelativePosition(
+              e.clientX,
+              e.clientY,
+              e.target
+            );
+            context.lineTo(position.x, position.y);
+            context.stroke();
+            context.beginPath();
+            context.moveTo(position.x, position.y);
+          },
+          endPaint(e) {
+            painting = false;
+            context.beginPath();
+            const canvasElement = this.canvases[activeCanvasIndex].element;
+            this.history.push(
+              context.getImageData(
+                0,
+                0,
+                canvasElement.clientWidth,
+                canvasElement.clientHeight
+              )
+            );
+          },
+          undo() {
+            if (!this.history || !this.history.undoable() || !context) {
+              return;
+            }
+            context.putImageData(this.history.undo(), 0, 0);
+          },
+          redo() {
+            if (!this.history || !this.history.redoable() || !context) {
+              return;
+            }
+            context.putImageData(this.history.redo(), 0, 0);
+          },
+          changedEraserWidth() {
+            this.activateEraser();
+            context.lineWidth = this.eraser.width;
+          },
+          showAppendPenDialog() {
+            this.appendPenDialog.visible = true;
+          },
+          download() {
+            if (activeCanvasIndex === null) {
+              return;
+            }
+            const canvas = this.canvases[activeCanvasIndex];
+            const canvasElement = canvas.element;
+            const link = document.createElement("a");
+            link.href = canvasElement.toDataURL("image/png");
+            link.download = `${canvas.title}.png`;
+            link.click();
+          }
+        }
+      });
     </script>
-</body>
-
+  </body>
 </html>
